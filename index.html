@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Experimentation</title>
+  </head>
+  <body>
+    <input type="file" id="import-file-input" />
+
+    <button id="start-playback-button">start playback</button>
+
+    <input type="range" id="percentage-control" value="0" max="100" />
+
+    <div>
+      total duration:
+      <span id="total-duration"></span>
+    </div>
+
+    <ul id="audio-list"></ul>
+  </body>
+
+  <script src="AudioSource.tsx" type="module"></script>
+  <script src="AudioStreamer.tsx" type="module"></script>
+  <script src="script.tsx" type="module"></script>
+</html>
