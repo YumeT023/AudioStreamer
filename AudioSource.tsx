@@ -29,7 +29,7 @@ export default class AudioSource implements StartAudio {
     sourceNode.connect(this._context.destination);
     sourceNode.start(when, offset);
     this.sourceNode = sourceNode;
-    return when + this.buffer.duration;
+    return when + this.buffer.duration - offset;
   }
 
   disconnect() {

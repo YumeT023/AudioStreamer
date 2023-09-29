@@ -34,10 +34,11 @@ export default class AudioStreamer {
     }
   }
 
-  private doLoop(...startCallbackQueue: Array<StartFn>) {
+  private doLoop(offset: number, ...startCallbackQueue: Array<StartFn>) {
     let cb = startCallbackQueue.shift();
     while (cb != null) {
-      this._scheduleAt = cb(this._scheduleAt);
+      this._scheduleAt = cb(this._scheduleAt, offset);
+      offset = 0;
       cb = startCallbackQueue.shift();
     }
   }
@@ -60,7 +61,7 @@ export default class AudioStreamer {
         const startFn: StartFn = (when, offset) => source.start(when, offset);
 
         if (this.isPlaying) {
-          this.doLoop(startFn);
+          this.doLoop(0, startFn);
         }
 
         this.scheduleAudiosQueue.push(startFn);
@@ -81,9 +82,14 @@ export default class AudioStreamer {
   seekAt(percent: number) {
     const time = (this.totalDuration * percent) / 100;
     const durationSpan = this._getCurrentDurationSpan(time);
-    stop();
+    this.reset();
+    this._scheduleAt = this._context.currentTime;
+    this._endedSourceNodeCount = durationSpan.index;
     this.isPlaying = true;
-    this.doLoop(...this.scheduleAudiosQueue.slice(durationSpan.index));
+    this.doLoop(
+      durationSpan.time,
+      ...this.scheduleAudiosQueue.slice(durationSpan.index)
+    );
   }
 
   private _getCurrentDurationSpan(time: number) {
@@ -99,22 +105,26 @@ export default class AudioStreamer {
     }
   }
 
+  reset() {
+    this._endedSourceNodeCount = 0;
+    this.streamingSourceNode.forEach((source) => {
+      source.disconnect();
+    });
+    this.isPlaying = false;
+  }
+
   start() {
     if (!this.isPlaying) {
       this.isPlaying = true;
       this._endedSourceNodeCount = 0;
       this._scheduleAt = this._context.currentTime;
-      this.doLoop(...this.scheduleAudiosQueue.slice());
+      this.doLoop(0, ...this.scheduleAudiosQueue.slice());
     }
   }
 
   stop() {
-    this._endedSourceNodeCount = 0;
-    this.streamingSourceNode.forEach((source) => {
-      source.disconnect();
-    });
+    this.reset();
     this.streamingSourceNode.length = 0;
     this.scheduleAudiosQueue.length = 0;
-    this.isPlaying = false;
   }
 }
