@@ -1,4 +1,5 @@
 import AudioSource, { StartFn } from "./AudioSource";
+import { CrossBrowserAudioContext } from "./browser";
 
 export interface DurationSpan {
   begin: number;
@@ -22,7 +23,7 @@ export default class AudioStreamer {
     this._durationSpans = [];
     this.isPlaying = false;
     this._scheduleAt = 0;
-    this._context = new AudioContext();
+    this._context = new CrossBrowserAudioContext();
     this._awaitedSchedulePromise = Promise.resolve();
     this._endedSourceNodeCount = 0;
   }
@@ -70,7 +71,7 @@ export default class AudioStreamer {
     ));
   }
 
-  _addDurationSpan(duration: number) {
+  private _addDurationSpan(duration: number) {
     let begin = this._durationSpans.at(-1)?.end ?? 0;
     this._durationSpans.push({
       begin,
